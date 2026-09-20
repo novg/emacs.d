@@ -7,6 +7,7 @@ The first milestone is intentionally limited to:
 
 - built-in `project.el` / `xref`;
 - Magit;
+- Dev Containers;
 - OpenAI Codex inside Emacs;
 - Claude Code with Emacs MCP tools.
 
@@ -14,12 +15,58 @@ The first milestone is intentionally limited to:
 
 - Emacs 30 or newer
 - `git` in `PATH`
-- `codex` CLI installed and authenticated
-- `claude` (Claude Code) CLI installed and authenticated
+- Docker / Docker Compose as required by your project
+- `devcontainer` CLI on the **host** for projects using Dev Containers
+- `codex` and `claude` either:
+  - inside the project's devcontainer, or
+  - on the host for non-devcontainer projects
+
+Install the official Dev Container CLI on the host, for example:
+
+```sh
+npm install -g @devcontainers/cli
+```
 
 The configuration uses Emacs 30's built-in `use-package :vc` support for the
 two agent integrations. Other package dependencies are installed from
 GNU ELPA, NonGNU ELPA, or MELPA on first startup.
+
+## Dev Container model
+
+Emacs itself runs on the host and edits the normal host-mounted working tree.
+
+For a project containing either:
+
+```text
+.devcontainer/devcontainer.json
+```
+
+or:
+
+```text
+.devcontainer.json
+```
+
+the generated Codex and Claude wrappers run:
+
+```sh
+devcontainer exec --workspace-folder "$PWD" codex ...
+devcontainer exec --workspace-folder "$PWD" claude ...
+```
+
+For projects without a devcontainer definition they fall back to:
+
+```sh
+codex ...
+claude ...
+```
+
+This means the same Emacs configuration works for both containerized and
+host-native projects.
+
+The `devcontainer.el` package is also installed. It can manage project
+devcontainers from Emacs and route normal `compile` commands into the
+container.
 
 ## Install
 
@@ -37,9 +84,16 @@ Start Emacs. The first launch may download package metadata and dependencies.
 
 ## First checks
 
-Inside Emacs:
+From a devcontainer project root, first verify on the host:
 
-1. Open a Git project.
+```sh
+devcontainer exec --workspace-folder . codex --version
+devcontainer exec --workspace-folder . claude --version
+```
+
+Then inside Emacs:
+
+1. Open the project.
 2. Run `M-x codex`.
 3. Press `C-c x` to explore the Codex command map.
 4. Run `M-x claude-code-ide-check-status`.
