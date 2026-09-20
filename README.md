@@ -3,111 +3,105 @@
 A deliberately small Emacs configuration for testing an agent-first development
 workflow.
 
-## Current architecture
+## Architecture
 
-Emacs runs on the host.
+Emacs runs on the host. Git/Magit also stays on the host so signing and host
+credentials remain unchanged.
 
-The ALMA development environment is different from the usual "one devcontainer
-per repository" model:
-
-- one shared devcontainer lives at `$ALMA_PROJECTS/repos/alma/.devcontainer`;
-- that path is a symlink to `$ALMA_PROJECTS/containers/dev-env/devcontainer`;
-- the whole `$ALMA_PROJECTS` tree is bind-mounted into the container at the
-  same absolute path;
-- many Git repositories live inside that tree;
-- VS Code selects a working subset through a multi-root workspace.
-
-Emacs therefore does **not** search for `.devcontainer.json` in every project.
-
-Instead, any Codex or Claude process started from a directory under
-`$ALMA_PROJECTS` is launched through the one shared ALMA devcontainer while
-preserving the current repository directory inside the container.
-
-Conceptually:
+The ALMA development tree uses one canonical VS Code Dev Container plus optional
+extra lightweight dev instances:
 
 ```text
-host Emacs
-   |
-   +-- project A ------+
-   +-- project B ------+--> shared alma-dev container
-   +-- project C ------+
+canonical:
+  alma-dev            <- VS Code Dev Containers
+
+optional:
+  alma-dev-adcs       <- Emacs / terminal workspace
+  alma-dev-ace        <- Emacs / terminal workspace
+
+shared:
+  db / saa / adminneo / saa-front
 ```
 
-Each repository remains an independent Emacs `project.el` project. The shared
-container is infrastructure, not the Emacs project root.
+All dev containers mount the full `$ALMA_PROJECTS` tree at the same absolute
+path and reuse the same named tool caches.
 
-For directories outside `$ALMA_PROJECTS`, Codex and Claude fall back to local
-host executables.
+## Choosing an instance from Emacs
+
+By default, an ALMA project uses the canonical `alma-dev` container.
+
+To bind the current Emacs project to an extra instance:
+
+```text
+M-x my/alma-use-instance
+```
+
+For example, from the ADCS repository enter:
+
+```text
+adcs
+```
+
+That persists a local mapping:
+
+```text
+/project/root    adcs
+```
+
+in `alma-instances` (ignored by Git).
+
+After that, Codex and Claude launched from that project automatically use
+`alma-dev-adcs`. Subdirectories inherit the longest matching project-root
+mapping.
+
+Useful commands:
+
+```text
+M-x my/alma-use-instance
+M-x my/alma-show-instance
+M-x my/alma-clear-instance
+```
+
+Clearing the mapping returns the project to the canonical VS Code container.
+
+## Agent commands
+
+```text
+M-x codex
+C-c x
+
+M-x claude-code-ide-check-status
+M-x claude-code-ide
+C-c C-'
+```
+
+Codex uses its `app-server` backend. Claude Code uses `eat` plus Emacs MCP
+tools.
+
+## Frontend in an extra instance
+
+The dev-env helper can publish a loopback-only Vite server without changing the
+frontend repository:
+
+```sh
+alma-dev-instance start adcs --forward 8182:8082
+```
+
+Then run the frontend normally inside `alma-dev-adcs`; its existing
+`127.0.0.1:8082` listener is proxied to host port `8182`.
+
+The canonical VS Code workflow and its normal port forwarding remain unchanged.
 
 ## Requirements
 
-- Emacs 30 or newer
-- `git`
+- Emacs 30+
 - Docker / Docker Compose
-- `devcontainer` CLI on the host
-- `ALMA_PROJECTS` available in the environment inherited by Emacs
-- `codex`, `claude`, `dotnet`, etc. installed in the shared devcontainer
-
-Install the Dev Container CLI on the host, for example:
-
-```sh
-npm install -g @devcontainers/cli
-```
-
-## How agent launching works
-
-If Emacs is currently in:
-
-```text
-$ALMA_PROJECTS/repos/some-project
-```
-
-the generated wrapper effectively does:
-
-```sh
-devcontainer exec \
-  --workspace-folder "$ALMA_PROJECTS/repos/alma" \
-  sh -lc 'cd "$CURRENT_PROJECT"; exec codex ...'
-```
-
-Claude works the same way.
-
-This is important because `devcontainer exec --workspace-folder` identifies
-the shared container, while the explicit `cd` restores the actual repository
-that the agent should work on.
-
-## Multi-root workflow in Emacs
-
-There is no need to reproduce a VS Code `.code-workspace` file just to use
-multiple repositories.
-
-Emacs can keep every Git repository as its own `project.el` project and switch
-between them with `project-switch-project`. Codex and Claude sessions stay
-project-aware while still using the same shared container.
-
-We can add a higher-level "workspace" layer later if we want one command to open
-a named set of related projects, buffers and tabs.
-
-## First checks
-
-On the host:
-
-```sh
-echo "$ALMA_PROJECTS"
-devcontainer exec --workspace-folder "$ALMA_PROJECTS/repos/alma" \
-  sh -lc 'command -v codex && command -v claude && command -v dotnet'
-```
-
-Inside Emacs:
-
-1. Open a file in one ALMA repository.
-2. Run `M-x codex`.
-3. Run `M-x claude-code-ide-check-status`.
-4. Run `M-x claude-code-ide`.
-5. Open a file in another ALMA repository and repeat.
-6. Use `C-x g` for Magit.
+- official `devcontainer` CLI on the host
+- `alma-dev-instance` installed by `dev-env/setup-host.sh`
+- `ALMA_PROJECTS` inherited by Emacs
+- Codex, Claude Code, dotnet and the rest of the toolchain inside the devcontainer
 
 ## Philosophy
 
-Keep Emacs native on the host and keep the development toolchain in the shared
-devcontainer. Add more integration only when a real workflow need appears.
+Keep the editor native, keep the project toolchain containerized, and only add
+workspace machinery when daily use proves it useful.
