@@ -3,111 +3,111 @@
 A deliberately small Emacs configuration for testing an agent-first development
 workflow.
 
-The first milestone is intentionally limited to:
+## Current architecture
 
-- built-in `project.el` / `xref`;
-- Magit;
-- Dev Containers;
-- OpenAI Codex inside Emacs;
-- Claude Code with Emacs MCP tools.
+Emacs runs on the host.
+
+The ALMA development environment is different from the usual "one devcontainer
+per repository" model:
+
+- one shared devcontainer lives at `$ALMA_PROJECTS/repos/alma/.devcontainer`;
+- that path is a symlink to `$ALMA_PROJECTS/containers/dev-env/devcontainer`;
+- the whole `$ALMA_PROJECTS` tree is bind-mounted into the container at the
+  same absolute path;
+- many Git repositories live inside that tree;
+- VS Code selects a working subset through a multi-root workspace.
+
+Emacs therefore does **not** search for `.devcontainer.json` in every project.
+
+Instead, any Codex or Claude process started from a directory under
+`$ALMA_PROJECTS` is launched through the one shared ALMA devcontainer while
+preserving the current repository directory inside the container.
+
+Conceptually:
+
+```text
+host Emacs
+   |
+   +-- project A ------+
+   +-- project B ------+--> shared alma-dev container
+   +-- project C ------+
+```
+
+Each repository remains an independent Emacs `project.el` project. The shared
+container is infrastructure, not the Emacs project root.
+
+For directories outside `$ALMA_PROJECTS`, Codex and Claude fall back to local
+host executables.
 
 ## Requirements
 
 - Emacs 30 or newer
-- `git` in `PATH`
-- Docker / Docker Compose as required by your project
-- `devcontainer` CLI on the **host** for projects using Dev Containers
-- `codex` and `claude` either:
-  - inside the project's devcontainer, or
-  - on the host for non-devcontainer projects
+- `git`
+- Docker / Docker Compose
+- `devcontainer` CLI on the host
+- `ALMA_PROJECTS` available in the environment inherited by Emacs
+- `codex`, `claude`, `dotnet`, etc. installed in the shared devcontainer
 
-Install the official Dev Container CLI on the host, for example:
+Install the Dev Container CLI on the host, for example:
 
 ```sh
 npm install -g @devcontainers/cli
 ```
 
-The configuration uses Emacs 30's built-in `use-package :vc` support for the
-two agent integrations. Other package dependencies are installed from
-GNU ELPA, NonGNU ELPA, or MELPA on first startup.
+## How agent launching works
 
-## Dev Container model
-
-Emacs itself runs on the host and edits the normal host-mounted working tree.
-
-For a project containing either:
+If Emacs is currently in:
 
 ```text
-.devcontainer/devcontainer.json
+$ALMA_PROJECTS/repos/some-project
 ```
 
-or:
-
-```text
-.devcontainer.json
-```
-
-the generated Codex and Claude wrappers run:
+the generated wrapper effectively does:
 
 ```sh
-devcontainer exec --workspace-folder "$PWD" codex ...
-devcontainer exec --workspace-folder "$PWD" claude ...
+devcontainer exec \
+  --workspace-folder "$ALMA_PROJECTS/repos/alma" \
+  sh -lc 'cd "$CURRENT_PROJECT"; exec codex ...'
 ```
 
-For projects without a devcontainer definition they fall back to:
+Claude works the same way.
 
-```sh
-codex ...
-claude ...
-```
+This is important because `devcontainer exec --workspace-folder` identifies
+the shared container, while the explicit `cd` restores the actual repository
+that the agent should work on.
 
-This means the same Emacs configuration works for both containerized and
-host-native projects.
+## Multi-root workflow in Emacs
 
-The `devcontainer.el` package is also installed. It can manage project
-devcontainers from Emacs and route normal `compile` commands into the
-container.
+There is no need to reproduce a VS Code `.code-workspace` file just to use
+multiple repositories.
 
-## Install
+Emacs can keep every Git repository as its own `project.el` project and switch
+between them with `project-switch-project`. Codex and Claude sessions stay
+project-aware while still using the same shared container.
 
-Clone this repository as your Emacs configuration directory.
-
-Typical Linux/macOS layout:
-
-```sh
-git clone https://github.com/novg/emacs.d.git ~/.emacs.d
-```
-
-If your Emacs uses `~/.config/emacs`, clone there instead.
-
-Start Emacs. The first launch may download package metadata and dependencies.
+We can add a higher-level "workspace" layer later if we want one command to open
+a named set of related projects, buffers and tabs.
 
 ## First checks
 
-From a devcontainer project root, first verify on the host:
+On the host:
 
 ```sh
-devcontainer exec --workspace-folder . codex --version
-devcontainer exec --workspace-folder . claude --version
+echo "$ALMA_PROJECTS"
+devcontainer exec --workspace-folder "$ALMA_PROJECTS/repos/alma" \
+  sh -lc 'command -v codex && command -v claude && command -v dotnet'
 ```
 
-Then inside Emacs:
+Inside Emacs:
 
-1. Open the project.
+1. Open a file in one ALMA repository.
 2. Run `M-x codex`.
-3. Press `C-c x` to explore the Codex command map.
-4. Run `M-x claude-code-ide-check-status`.
-5. Run `M-x claude-code-ide`.
-6. Press `C-c C-'` for the Claude Code menu.
-7. Press `C-x g` for Magit.
-
-Codex is configured to use its native `app-server` backend.
-
-Claude Code uses `eat` and enables the Emacs MCP tools, giving Claude access
-to project/xref/imenu/tree-sitter-aware operations exposed by
-`claude-code-ide.el`.
+3. Run `M-x claude-code-ide-check-status`.
+4. Run `M-x claude-code-ide`.
+5. Open a file in another ALMA repository and repeat.
+6. Use `C-x g` for Magit.
 
 ## Philosophy
 
-Do not turn this into a large distribution yet. Add configuration only when a
-real workflow problem appears during daily use.
+Keep Emacs native on the host and keep the development toolchain in the shared
+devcontainer. Add more integration only when a real workflow need appears.
