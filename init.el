@@ -80,8 +80,7 @@
 ;;;; Agents
 
 (defconst my/codex-program
-  (or (executable-find "codex_proxy")
-      (executable-find "codex")
+  (or (executable-find "codex")
       "codex")
   "Host-native Codex executable.")
 
