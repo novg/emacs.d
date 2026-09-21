@@ -30,6 +30,15 @@
 (when (file-readable-p "/etc/ssl/certs/ca-certificates.crt")
   (setenv "NODE_EXTRA_CA_CERTS" "/etc/ssl/certs/ca-certificates.crt"))
 
+;; Prototype-render skills use globally installed puppeteer-core. GUI Emacs does
+;; not necessarily inherit a login shell's NODE_PATH, so derive it from the same
+;; mise-managed npm that is already on exec-path.
+(when-let ((npm (executable-find "npm")))
+  (condition-case nil
+      (when-let ((node-path (car (process-lines npm "root" "-g"))))
+        (setenv "NODE_PATH" node-path))
+    (error nil)))
+
 ;;;; Packages
 
 (setq package-archives
