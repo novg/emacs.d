@@ -11,7 +11,7 @@ Emacs работает полностью на хосте. Никаких `devco
 Emacs
 ├── Magit -> host Git / GPG / SSH
 ├── Eglot -> host csharp-ls
-├── Codex -> host codex_proxy -> mise Codex
+├── Codex -> host codex -> mise Codex
 └── Claude Code -> host Claude CLI
 
 Docker
@@ -56,8 +56,8 @@ M-x claude-code-ide
 C-c C-'
 ```
 
-Codex предпочитает `codex_proxy` из `alma-dev`, если wrapper установлен, иначе запускает
-обычный `codex`. Claude Code запускается напрямую на хосте.
+Codex запускается напрямую на хосте через `codex` из mise toolchain.
+Claude Code также запускается напрямую на хосте.
 
 ## Git
 
