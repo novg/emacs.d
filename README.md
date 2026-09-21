@@ -1,70 +1,51 @@
 # emacs.d
 
-A deliberately small Emacs configuration for testing an agent-first development
-workflow.
+Небольшая конфигурация Emacs для эксперимента с agent-first C# workflow.
 
-## Architecture
+## Архитектура
 
-Emacs runs on the host. Git/Magit also stays on the host so signing and host
-credentials remain unchanged.
-
-The ALMA development tree uses one canonical VS Code Dev Container plus optional
-extra lightweight dev instances:
+Emacs работает полностью на хосте. Никаких `devcontainer exec`, `alma-dev-instance`
+или контейнерных wrapper-ов больше нет.
 
 ```text
-canonical:
-  alma-dev            <- VS Code Dev Containers
+Emacs
+├── Magit -> host Git / GPG / SSH
+├── Eglot -> host csharp-ls
+├── Codex -> host codex_proxy -> mise Codex
+└── Claude Code -> host Claude CLI
 
-optional:
-  alma-dev-adcs       <- Emacs / terminal workspace
-  alma-dev-ace        <- Emacs / terminal workspace
-
-shared:
-  db / saa / adminneo / saa-front
+Docker
+└── db / adminneo / saa / saa-front
+    управляются отдельным novg/alma-dev
 ```
 
-All dev containers mount the full `$ALMA_PROJECTS` tree at the same absolute
-path and reuse the same named tool caches.
+Toolchain и инфраструктуру предоставляет `novg/alma-dev`. Этот репозиторий отвечает только
+за Emacs.
 
-## Choosing an instance from Emacs
+## Requirements
 
-By default, an ALMA project uses the canonical `alma-dev` container.
+- Emacs 30+;
+- выполненный `alma-dev/bootstrap.sh`;
+- `~/.local/bin` и mise toolchain, созданные `alma-dev`;
+- `csharp-ls` для C#;
+- Codex и Claude Code из того же mise toolchain.
 
-To bind the current Emacs project to an extra instance:
+GUI Emacs сам добавляет mise shims и `~/.local/bin` в `exec-path`, поэтому не зависит от
+запуска из терминала. Простые переменные из `~/.config/alma-dev/env` тоже подхватываются
+напрямую.
+
+## C#
+
+C# buffers автоматически запускают Eglot с `csharp-ls`.
 
 ```text
-M-x my/alma-use-instance
+M-x eglot
+M-x eglot-reconnect
+M-x xref-find-definitions
+M-x xref-find-references
 ```
 
-For example, from the ADCS repository enter:
-
-```text
-adcs
-```
-
-That persists a local mapping:
-
-```text
-/project/root    adcs
-```
-
-in `alma-instances` (ignored by Git).
-
-After that, Codex and Claude launched from that project automatically use
-`alma-dev-adcs`. Subdirectories inherit the longest matching project-root
-mapping.
-
-Useful commands:
-
-```text
-M-x my/alma-use-instance
-M-x my/alma-show-instance
-M-x my/alma-clear-instance
-```
-
-Clearing the mapping returns the project to the canonical VS Code container.
-
-## Agent commands
+## Agents
 
 ```text
 M-x codex
@@ -75,33 +56,15 @@ M-x claude-code-ide
 C-c C-'
 ```
 
-Codex uses its `app-server` backend. Claude Code uses `eat` plus Emacs MCP
-tools.
+Codex предпочитает `codex_proxy` из `alma-dev`, если wrapper установлен, иначе запускает
+обычный `codex`. Claude Code запускается напрямую на хосте.
 
-## Frontend in an extra instance
+## Git
 
-The dev-env helper can publish a loopback-only Vite server without changing the
-frontend repository:
-
-```sh
-alma-dev-instance start adcs --forward 8182:8082
-```
-
-Then run the frontend normally inside `alma-dev-adcs`; its existing
-`127.0.0.1:8082` listener is proxied to host port `8182`.
-
-The canonical VS Code workflow and its normal port forwarding remain unchanged.
-
-## Requirements
-
-- Emacs 30+
-- Docker / Docker Compose
-- official `devcontainer` CLI on the host
-- `alma-dev-instance` installed by `dev-env/setup-host.sh`
-- `ALMA_PROJECTS` inherited by Emacs
-- Codex, Claude Code, dotnet and the rest of the toolchain inside the devcontainer
+`C-x g` открывает Magit. Git, SSH и GPG полностью host-native, поэтому подписанные commits и
+credentials используют обычную конфигурацию пользователя без forwarding в контейнер.
 
 ## Philosophy
 
-Keep the editor native, keep the project toolchain containerized, and only add
-workspace machinery when daily use proves it useful.
+Редактор и development toolchain находятся на одной стороне границы — на хосте.
+Контейнеры используются только как runtime infrastructure.
