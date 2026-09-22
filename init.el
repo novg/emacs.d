@@ -40,16 +40,38 @@
     (error nil)))
 
 
-;;;; Auto-save
+;;;; Runtime state
+
+(defconst my/cache-directory
+  (expand-file-name "~/.cache/emacs/")
+  "Directory for mutable Emacs runtime state.")
 
 (defconst my/auto-save-directory
-  (expand-file-name "auto-save/" user-emacs-directory)
+  (expand-file-name "auto-save/" my/cache-directory)
   "Directory for Emacs auto-save files.")
 
-(make-directory my/auto-save-directory t)
+(defconst my/auto-save-list-directory
+  (expand-file-name "auto-save-list/" my/cache-directory)
+  "Directory for Emacs auto-save session metadata.")
+
+(defconst my/backup-directory
+  (expand-file-name "backups/" my/cache-directory)
+  "Directory for Emacs backup files.")
+
+(dolist (dir (list my/cache-directory
+                   my/auto-save-directory
+                   my/auto-save-list-directory
+                   my/backup-directory))
+  (make-directory dir t))
 
 (setq auto-save-file-name-transforms
-      `((".*" ,my/auto-save-directory t)))
+      `((".*" ,my/auto-save-directory t))
+      auto-save-list-file-prefix
+      (expand-file-name ".saves-" my/auto-save-list-directory)
+      backup-directory-alist
+      `(("." . ,my/backup-directory))
+      project-list-file
+      (expand-file-name "projects" my/cache-directory))
 
 ;;;; Packages
 
