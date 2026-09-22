@@ -2,3 +2,7 @@ custom.el
 elpa/
 eln-cache/
 transient/
+auto-save/
+auto-save-list/
+projects
+*~
