@@ -39,6 +39,18 @@
         (setenv "NODE_PATH" node-path))
     (error nil)))
 
+
+;;;; Auto-save
+
+(defconst my/auto-save-directory
+  (expand-file-name "auto-save/" user-emacs-directory)
+  "Directory for Emacs auto-save files.")
+
+(make-directory my/auto-save-directory t)
+
+(setq auto-save-file-name-transforms
+      `((".*" ,my/auto-save-directory t)))
+
 ;;;; Packages
 
 (setq package-archives
