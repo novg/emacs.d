@@ -42,6 +42,9 @@
 
 ;;;; Runtime state
 
+(setq create-lockfiles nil)
+
+
 (defconst my/cache-directory
   (expand-file-name "~/.cache/emacs/")
   "Directory for mutable Emacs runtime state.")
