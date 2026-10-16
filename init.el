@@ -39,6 +39,8 @@
         (setenv "NODE_PATH" node-path))
     (error nil)))
 
+;;;;
+(setq frame-resize-pixelwise t)
 
 ;;;; Runtime state
 
