@@ -39,8 +39,33 @@
         (setenv "NODE_PATH" node-path))
     (error nil)))
 
-;;;;
+;;;; 
 (setq frame-resize-pixelwise t)
+(when window-system
+  (set-frame-size (selected-frame) 160 35))
+
+(when (display-graphic-p)
+  (tool-bar-mode 0) ;; disable tool bar
+  (menu-bar-mode 0) ;; disable menu bar
+  (scroll-bar-mode 0)) ;; disable scroll bar
+
+(setq inhibit-startup-screen t) ;; disable startup screen
+;; (setq frame-title-format "GNU Emacs: %b")
+;; (setq ring-bell-function 'ignore)
+;; (setq-default indent-tabs-mode nil) ;; use spaces, not tabs, for indentation
+
+(defalias 'yes-or-no-p 'y-or-n-p)
+
+(setq scroll-step 1
+      scroll-margin 1
+      scroll-conservatively 10000)
+
+;;;; show line numbers
+(global-display-line-numbers-mode)
+(setq display-line-numbers-type 'relative)
+(column-number-mode)
+(global-hl-line-mode t) ;; Highlight current line
+
 
 ;;;; Runtime state
 
