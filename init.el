@@ -61,8 +61,8 @@
       scroll-conservatively 10000)
 
 ;;;; show line numbers
-(global-display-line-numbers-mode)
 (setq display-line-numbers-type 'relative)
+(add-hook 'prog-mode-hook #'display-line-numbers-mode)
 (column-number-mode)
 (global-hl-line-mode t) ;; Highlight current line
 
@@ -70,6 +70,9 @@
 ;;;; Runtime state
 
 (setq create-lockfiles nil)
+
+;; Refresh unmodified file buffers after external agent edits.
+(global-auto-revert-mode 1)
 
 
 (defconst my/cache-directory
@@ -171,6 +174,11 @@
   ("C-c C-'" . claude-code-ide-menu)
   :config
   (claude-code-ide-emacs-tools-setup))
+
+;; Experimental ACP client; keep the existing specialized clients.
+(use-package agent-shell
+  :ensure t
+  :commands (agent-shell))
 
 (provide 'init)
 ;;; init.el ends here
