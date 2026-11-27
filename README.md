@@ -34,6 +34,50 @@ GUI Emacs сам добавляет mise shims и `~/.local/bin` в `exec-path`,
 запуска из терминала. Простые переменные из `~/.config/alma-dev/env` тоже подхватываются
 напрямую.
 
+## Интерфейс и навигация
+
+Пакеты устанавливаются автоматически через package.el. При ошибке 404 от MELPA
+выполни `M-x package-refresh-contents` и перезапусти Emacs.
+
+- Vertico, Orderless, Consult, Marginalia, Embark и Embark Consult: стандартный completion API вместо Helm.
+- Corfu и Cape: автодополнение в программных буферах, включая Eglot и дополнительные CAPF.
+- Diff-hl: индикаторы изменений Git и обновление после операций Magit.
+- Modus Themes: встроенная светлая тема modus-operandi по умолчанию, если пользователь не выбрал другую.
+- Doom Modeline, Nerd Icons, Nerd Icons Completion и Nerd Icons Dired: строка состояния и иконки.
+- Which-key и Helpful: подсказки клавиш и расширенная справка.
+- Savehist и Recentf: история minibuffer и недавние файлы в ~/.cache/emacs/.
+
+Для корректного отображения иконок один раз выполни `M-x nerd-icons-install-fonts`,
+затем перезапусти Emacs. Для поиска через Consult Ripgrep нужен `rg` на хосте
+(в Debian: `sudo apt install ripgrep`). Тему можно выбрать через `M-x load-theme`,
+например modus-vivendi для тёмного оформления.
+
+| Клавиши | Действие |
+| --- | --- |
+| M-x | Выбор команды |
+| C-x C-f | Открыть файл |
+| C-x b | Consult Buffer |
+| C-x p f | Файл проекта |
+| C-s | Consult Line |
+| M-g g | Перейти к строке |
+| M-g i | Символы буфера |
+| M-g e | Ошибки компиляции |
+| M-y | История kill-ring |
+| C-c s r | Ripgrep |
+| C-c s f | Поиск файлов |
+| C-c s h | История minibuffer |
+| C-. | Embark Act |
+| C-; | Embark DWIM |
+| C-h f / v / k / x | Helpful |
+| C-c a | Agent Shell |
+| C-c x | Codex |
+| C-c C-' | Claude Code |
+| C-x g | Magit |
+
+Orderless позволяет вводить несколько частей имени через пробел в произвольном порядке.
+Проверка после обновления: запусти Emacs, открой C# файл, проверь completion Eglot,
+Consult Ripgrep, Dired, Magit и все три агентных интерфейса.
+
 ## C#
 
 C# buffers автоматически запускают Eglot с `csharp-ls`.
@@ -64,7 +108,8 @@ Claude Code также запускается напрямую на хосте.
 Существующие клиенты Codex и Claude Code сохранены. `agent-shell` устанавливается через MELPA; ACP-адаптеры нужно отдельно установить на хосте с активным mise toolchain:
 
 ```sh
-npm install -g @agentclientprotocol/claude-agent-acp @agentclientprotocol/codex-acp
+mise use -g 'npm:@agentclientprotocol/claude-agent-acp'
+mise use -g 'npm:@agentclientprotocol/codex-acp'
 mise reshim
 command -v claude-agent-acp codex-acp
 ```
