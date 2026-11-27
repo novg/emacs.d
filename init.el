@@ -122,6 +122,128 @@
 (when (file-exists-p custom-file)
   (load custom-file nil 'nomessage))
 
+;;;; Completion and navigation
+
+(use-package savehist
+  :ensure nil
+  :init
+  (setq savehist-file (expand-file-name "history" my/cache-directory))
+  (savehist-mode 1))
+
+(use-package recentf
+  :ensure nil
+  :init
+  (setq recentf-save-file (expand-file-name "recentf" my/cache-directory)
+        recentf-max-saved-items 200)
+  (recentf-mode 1))
+
+(use-package vertico
+  :ensure t
+  :init (vertico-mode 1))
+
+(use-package orderless
+  :ensure t
+  :custom
+  (completion-styles '(orderless basic))
+  (completion-category-defaults nil)
+  (completion-category-overrides '((file (styles partial-completion)))))
+
+(use-package consult
+  :ensure t
+  :bind (("C-x b" . consult-buffer)
+         ("C-s" . consult-line)
+         ("M-g g" . consult-goto-line)
+         ("M-g i" . consult-imenu)
+         ("M-g e" . consult-compile-error)
+         ("M-y" . consult-yank-pop)
+         ("C-c s r" . consult-ripgrep)
+         ("C-c s f" . consult-find)
+         ("C-c s h" . consult-history)))
+
+(use-package marginalia
+  :ensure t
+  :init (marginalia-mode 1))
+
+(use-package embark
+  :ensure t
+  :bind (("C-." . embark-act)
+         ("C-;" . embark-dwim))
+  :init (setq prefix-help-command #'embark-prefix-help-command))
+
+(use-package embark-consult
+  :ensure t
+  :after (embark consult)
+  :hook (embark-collect-mode . consult-preview-at-point-mode))
+
+;;;; In-buffer completion
+
+(use-package corfu
+  :ensure t
+  :custom
+  (corfu-auto t)
+  (corfu-auto-delay 0.2)
+  (corfu-auto-prefix 2)
+  (corfu-cycle t)
+  :hook (prog-mode . corfu-mode))
+
+(use-package cape
+  :ensure t
+  :init
+  (add-hook 'completion-at-point-functions #'cape-file t)
+  (add-hook 'completion-at-point-functions #'cape-dabbrev t))
+
+;;;; Appearance and ergonomics
+
+(use-package modus-themes
+  :ensure nil
+  :config
+  (unless custom-enabled-themes
+    (load-theme 'modus-operandi t)))
+
+(use-package nerd-icons
+  :ensure t)
+
+(use-package nerd-icons-completion
+  :ensure t
+  :after marginalia
+  :config
+  (nerd-icons-completion-mode 1)
+  (add-hook 'marginalia-mode-hook #'nerd-icons-completion-marginalia-setup)
+  (when marginalia-mode
+    (nerd-icons-completion-marginalia-setup)))
+
+(use-package nerd-icons-dired
+  :ensure t
+  :hook (dired-mode . nerd-icons-dired-mode))
+
+(use-package doom-modeline
+  :ensure t
+  :custom (doom-modeline-icon (display-graphic-p))
+  :init (doom-modeline-mode 1))
+
+(use-package which-key
+  :ensure nil
+  :custom (which-key-idle-delay 0.5)
+  :config (which-key-mode 1))
+
+(use-package helpful
+  :ensure t
+  :bind (("C-h f" . helpful-callable)
+         ("C-h v" . helpful-variable)
+         ("C-h k" . helpful-key)
+         ("C-h x" . helpful-command)))
+
+(use-package diff-hl
+  :ensure t
+  :hook ((prog-mode . diff-hl-mode)
+         (text-mode . diff-hl-mode)
+         (dired-mode . diff-hl-dired-mode))
+  :config
+  (diff-hl-flydiff-mode 1)
+  (with-eval-after-load 'magit
+    (add-hook 'magit-pre-refresh-hook #'diff-hl-magit-pre-refresh)
+    (add-hook 'magit-post-refresh-hook #'diff-hl-magit-post-refresh)))
+
 ;;;; Git
 
 (use-package magit
@@ -178,7 +300,8 @@
 ;; Experimental ACP client; keep the existing specialized clients.
 (use-package agent-shell
   :ensure t
-  :commands (agent-shell))
+  :commands (agent-shell)
+  :bind ("C-c a" . agent-shell))
 
 (provide 'init)
 ;;; init.el ends here
