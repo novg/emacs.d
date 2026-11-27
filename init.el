@@ -304,5 +304,21 @@
   :commands (agent-shell)
   :bind ("C-c a" . agent-shell))
 
+;;;; Local documentation
+
+(defun my/open-cheatsheet ()
+  "Select and open a Markdown cheatsheet from this configuration."
+  (interactive)
+  (let* ((directory (expand-file-name "docs/cheatsheets/" user-emacs-directory))
+         (files (when (file-directory-p directory)
+                  (directory-files directory nil "\\.md\\'"))))
+    (unless files
+      (user-error "No cheatsheets found in %s" directory))
+    (let* ((choices (mapcar #'file-name-sans-extension files))
+           (choice (completing-read "Cheatsheet: " choices nil t)))
+      (find-file (expand-file-name (concat choice ".md") directory)))))
+
+(global-set-key (kbd "C-c h") #'my/open-cheatsheet)
+
 (provide 'init)
 ;;; init.el ends here
