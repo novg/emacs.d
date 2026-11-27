@@ -69,6 +69,7 @@ GUI Emacs сам добавляет mise shims и `~/.local/bin` в `exec-path`,
 | C-. | Embark Act |
 | C-; | Embark DWIM |
 | C-h f / v / k / x | Helpful |
+| C-c h | Открыть памятку |
 | C-c a | Agent Shell |
 | C-c x | Codex |
 | C-c C-' | Claude Code |
@@ -77,6 +78,13 @@ GUI Emacs сам добавляет mise shims и `~/.local/bin` в `exec-path`,
 Orderless позволяет вводить несколько частей имени через пробел в произвольном порядке.
 Проверка после обновления: запусти Emacs, открой C# файл, проверь completion Eglot,
 Consult Ripgrep, Dired, Magit и все три агентных интерфейса.
+
+## Памятки
+
+- [Agent-shell — работа с AI-агентами](docs/cheatsheets/agent-shell.md)
+- [Magit — Git и ревью изменений](docs/cheatsheets/magit.md)
+
+В Emacs нажми `C-c h` (или `M-x my/open-cheatsheet`), выбери памятку через Vertico и нажми `RET`. Новые Markdown-файлы в `docs/cheatsheets/` автоматически появятся в списке после добавления в локальную конфигурацию.
 
 ## C#
 
