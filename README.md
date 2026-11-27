@@ -79,10 +79,35 @@ Orderless позволяет вводить несколько частей им
 Проверка после обновления: запусти Emacs, открой C# файл, проверь completion Eglot,
 Consult Ripgrep, Dired, Magit и все три агентных интерфейса.
 
+## Редактирование и рабочие пространства
+
+- Markdown Mode: планы, документация и памятки.
+- Avy, Expand Region и Ace Window: быстрая навигация, выделение и выбор окон.
+- Wgrep: редактирование экспортированных результатов поиска.
+- Undo-fu и Undo-fu-session: отмена, повтор и сохранение истории отмены в ~/.cache/emacs/undo/.
+- Indent Bars и Rainbow Delimiters: визуальные подсказки в программных буферах.
+- Встроенные Winner, Repeat, Save Place, Electric Pair, Show Paren, Pixel Scroll Precision и Tab Bar.
+- Electric Pair включается локально в программных буферах, плавная прокрутка — только в графическом Emacs.
+
+| Клавиши | Действие |
+| --- | --- |
+| C-c j | Avy: перейти к видимому тексту |
+| C-c e | Расширить выделение |
+| C-c w | Выбрать окно |
+| C-c u | Undo |
+| C-c r | Redo |
+| C-c Left / Right | Winner: предыдущая / следующая конфигурация окон |
+| C-x t 2 | Новая вкладка |
+| C-x t o | Следующая вкладка |
+| C-x t 0 | Закрыть вкладку |
+
+Подробнее: [памятка по редактированию и рабочим пространствам](docs/cheatsheets/editing.md).
+
 ## Памятки
 
 - [Agent-shell — работа с AI-агентами](docs/cheatsheets/agent-shell.md)
 - [Magit — Git и ревью изменений](docs/cheatsheets/magit.md)
+- [Редактирование и рабочие пространства](docs/cheatsheets/editing.md)
 
 В Emacs нажми `C-c h` (или `M-x my/open-cheatsheet`), выбери памятку через Vertico и нажми `RET`. Новые Markdown-файлы в `docs/cheatsheets/` автоматически появятся в списке после добавления в локальную конфигурацию.
 
