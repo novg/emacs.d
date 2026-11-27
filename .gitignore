@@ -9,3 +9,5 @@ projects
 tutorial/
 tramp
 url/
+.agent-shell/
+agent/
