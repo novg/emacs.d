@@ -148,6 +148,12 @@
   (completion-category-defaults nil)
   (completion-category-overrides '((file (styles partial-completion)))))
 
+;; Install the integration before either client can check for it.
+(use-package embark-consult
+  :ensure t
+  :defer t
+  :hook (embark-collect-mode . consult-preview-at-point-mode))
+
 (use-package consult
   :ensure t
   :bind (("C-x b" . consult-buffer)
@@ -170,11 +176,6 @@
          ("C-;" . embark-dwim))
   :init (setq prefix-help-command #'embark-prefix-help-command))
 
-(use-package embark-consult
-  :ensure t
-  :after (embark consult)
-  :hook (embark-collect-mode . consult-preview-at-point-mode))
-
 ;;;; In-buffer completion
 
 (use-package corfu
@@ -195,7 +196,7 @@
 ;;;; Appearance and ergonomics
 
 (use-package modus-themes
-  :ensure nil
+  :ensure t
   :config
   (unless custom-enabled-themes
     (load-theme 'modus-operandi t)))
