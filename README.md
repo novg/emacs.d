@@ -59,6 +59,24 @@ C-c C-'
 Codex запускается напрямую на хосте через `codex` из mise toolchain.
 Claude Code также запускается напрямую на хосте.
 
+### Эксперимент: agent-shell (ACP)
+
+Существующие клиенты Codex и Claude Code сохранены. `agent-shell` устанавливается через MELPA; ACP-адаптеры нужно отдельно установить на хосте с активным mise toolchain:
+
+```sh
+npm install -g @agentclientprotocol/claude-agent-acp @agentclientprotocol/codex-acp
+mise reshim
+command -v claude-agent-acp codex-acp
+```
+
+Перезапусти Emacs. Открой файл проекта и вызови `M-x agent-shell`, затем выбери Claude или Codex. `C-u M-x agent-shell` создаёт новую сессию. Проверь, что оба адаптера доступны через `M-: (executable-find "claude-agent-acp")` и аналогично для `codex-acp`. При необходимости настрой аутентификацию согласно [документации agent-shell](https://github.com/xenodium/agent-shell); доступ по подписке и возможные расходы зависят от провайдера и адаптера.
+
+Для сравнения с существующими клиентами проверь получение задачи, вызов скиллов, планирование, редактирование, подтверждение действий и просмотр diff в Magit. Не запускай одновременно пишущих агентов в одном рабочем дереве.
+
+## Editing defaults
+
+Auto Revert обновляет неизменённые в Emacs файловые буферы после внешнего редактирования. Несохранённые изменения автоматически не перезаписываются; перед работой агента сохраняй буферы. Относительные номера строк включены только в `prog-mode`.
+
 ## Git
 
 `C-x g` открывает Magit. Git, SSH и GPG полностью host-native, поэтому подписанные commits и
