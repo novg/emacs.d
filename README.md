@@ -108,6 +108,12 @@ Consult Ripgrep, Dired, Magit и все три агентных интерфей
 - [Agent-shell — работа с AI-агентами](docs/cheatsheets/agent-shell.md)
 - [Magit — Git и ревью изменений](docs/cheatsheets/magit.md)
 - [Редактирование и рабочие пространства](docs/cheatsheets/editing.md)
+- [Навигация и поиск — Vertico, Consult, Orderless, Embark](docs/cheatsheets/navigation.md)
+- [C# — Eglot, Corfu, Cape](docs/cheatsheets/csharp.md)
+- [Окна, буферы и вкладки](docs/cheatsheets/windows.md)
+- [Повседневная работа — Dired, справка и оформление](docs/cheatsheets/daily.md)
+
+Рекомендуемый порядок обучения: navigation → windows → editing → csharp → daily. Памятки agent-shell и magit описывают основной цикл агентной разработки.
 
 В Emacs нажми `C-c h` (или `M-x my/open-cheatsheet`), выбери памятку через Vertico и нажми `RET`. Новые Markdown-файлы в `docs/cheatsheets/` автоматически появятся в списке после добавления в локальную конфигурацию.
 
