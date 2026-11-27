@@ -245,6 +245,70 @@
     (add-hook 'magit-pre-refresh-hook #'diff-hl-magit-pre-refresh)
     (add-hook 'magit-post-refresh-hook #'diff-hl-magit-post-refresh)))
 
+;;;; Editing and documentation
+
+(use-package markdown-mode
+  :ensure t
+  :mode (("\\.md\\'" . markdown-mode)
+         ("\\.markdown\\'" . markdown-mode)))
+
+(use-package avy
+  :ensure t
+  :bind ("C-c j" . avy-goto-char-timer))
+
+(use-package expand-region
+  :ensure t
+  :bind ("C-c e" . er/expand-region))
+
+(use-package ace-window
+  :ensure t
+  :bind ("C-c w" . ace-window))
+
+(use-package wgrep
+  :ensure t
+  :commands (wgrep-change-to-wgrep-mode))
+
+(use-package undo-fu
+  :ensure t
+  :bind (("C-c u" . undo-fu-only-undo)
+         ("C-c r" . undo-fu-only-redo)))
+
+(use-package undo-fu-session
+  :ensure t
+  :after undo-fu
+  :demand t
+  :custom
+  (undo-fu-session-directory
+   (expand-file-name "undo/" my/cache-directory))
+  :config
+  (make-directory undo-fu-session-directory t)
+  (undo-fu-session-global-mode 1))
+
+(use-package indent-bars
+  :ensure t
+  :hook (prog-mode . indent-bars-mode))
+
+(use-package rainbow-delimiters
+  :ensure t
+  :hook (prog-mode . rainbow-delimiters-mode))
+
+;;;; Built-in editing and workspace tools
+
+(winner-mode 1)
+(repeat-mode 1)
+
+(setq save-place-file (expand-file-name "places" my/cache-directory))
+(save-place-mode 1)
+
+;; Do not enable automatic pairing in agent prompts or terminal buffers.
+(add-hook 'prog-mode-hook #'electric-pair-local-mode)
+(show-paren-mode 1)
+
+(when (display-graphic-p)
+  (pixel-scroll-precision-mode 1))
+
+(tab-bar-mode 1)
+
 ;;;; Git
 
 (use-package magit
