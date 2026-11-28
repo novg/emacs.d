@@ -121,6 +121,8 @@ Consult Ripgrep, Dired, Magit и все три агентных интерфей
 
 C# buffers автоматически запускают Eglot с `csharp-ls`.
 
+`C-S-SPC` (Ctrl+Shift+Space) в буфере Eglot открывает подсказку сигнатур и документации через Eldoc Box. Помести курсор внутри скобок вызова метода. Содержимое зависит от ответа языкового сервера. Всплывающее окно вызывается вручную в графическом Emacs; альтернативная команда — `M-x eldoc-doc-buffer`.
+
 ```text
 M-x eglot
 M-x eglot-reconnect
