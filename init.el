@@ -313,8 +313,11 @@
 
 (use-package doom-modeline
   :ensure t
-  :custom (doom-modeline-icon (display-graphic-p))
-  :init (doom-modeline-mode 1))
+  :custom
+  (doom-modeline-icon (display-graphic-p))
+  (doom-modeline-vcs-max-length 50)
+  :init
+  (doom-modeline-mode 1))
 
 (use-package which-key
   :ensure nil
