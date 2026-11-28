@@ -254,11 +254,26 @@
   :custom
   (markdown-command "pandoc --from=gfm --to=html5 --standalone --highlight-style=tango"))
 
-(use-package markdown-mermaid
-  :ensure t
-  :after markdown-mode
-  :bind (:map markdown-mode-map
-              ("C-c m" . markdown-mermaid-preview)))
+;; Start the preview on demand, rather than opening a browser for every .md.
+(with-eval-after-load 'eglot
+  (add-to-list 'eglot-server-programs
+               '((markdown-mode gfm-mode) . ("mpls" "--theme" "dark"))))
+
+(defun my/markdown-preview ()
+  "Start mpls via Eglot or reopen the current Markdown preview."
+  (interactive)
+  (require 'eglot)
+  (unless (executable-find "mpls")
+    (user-error "Install mpls via mise first"))
+  (unless buffer-file-name
+    (user-error "Save the Markdown document to a file first"))
+  (if-let ((server (eglot-current-server)))
+      (jsonrpc-request server :workspace/executeCommand
+                       '(:command "open-preview"))
+    (call-interactively #'eglot)))
+
+(with-eval-after-load 'markdown-mode
+  (define-key markdown-mode-map (kbd "C-c m") #'my/markdown-preview))
 
 (use-package avy
   :ensure t
