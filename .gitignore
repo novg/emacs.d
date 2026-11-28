@@ -11,3 +11,4 @@ tramp
 url/
 .agent-shell/
 agent/
+node_modules/
