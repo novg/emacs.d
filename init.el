@@ -331,6 +331,13 @@
   (add-to-list 'eglot-server-programs
                '((csharp-mode csharp-ts-mode) . ("csharp-ls"))))
 
+;; Explicit signature/documentation popup, without automatic child frames.
+(use-package eldoc-box
+  :ensure t
+  :after eglot
+  :bind (:map eglot-mode-map
+              ("C-S-SPC" . eldoc-box-help-at-point)))
+
 ;;;; Agents
 
 (defconst my/codex-program
