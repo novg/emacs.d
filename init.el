@@ -252,6 +252,7 @@
   :mode (("\\.md\\'" . markdown-mode)
          ("\\.markdown\\'" . markdown-mode))
   :custom
+  (markdown-fontify-code-blocks-natively t)
   (markdown-command "pandoc --from=gfm --to=html5 --standalone --highlight-style=tango"))
 
 ;; Start the preview on demand, rather than opening a browser for every .md.
