@@ -250,7 +250,14 @@
 (use-package markdown-mode
   :ensure t
   :mode (("\\.md\\'" . markdown-mode)
-         ("\\.markdown\\'" . markdown-mode)))
+         ("\\.markdown\\'" . markdown-mode))
+  :custom
+  (markdown-command "pandoc --from=gfm --to=html5 --standalone --highlight-style=tango")
+  :bind (:map markdown-mode-map
+              ("C-c m" . my/markdown-preview)))
+
+(load (expand-file-name "lisp/markdown-preview.el" user-emacs-directory)
+      nil 'nomessage)
 
 (use-package avy
   :ensure t
