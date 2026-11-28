@@ -282,23 +282,32 @@
             (nreverse entries)))))))
 
 (defun my/dired-show-git-status ()
-  "Annotate changed files in Dired with Git status before the filename."
+  "Show a fixed-width Git status column before every filename in Dired."
   (mapc #'delete-overlay my/dired-git-status-overlays)
   (setq my/dired-git-status-overlays nil)
   (when (derived-mode-p 'dired-mode)
-    (let ((directory default-directory))
+    (let ((directory default-directory)
+          (statuses (make-hash-table :test #'equal)))
       (dolist (entry (my/dired-git-status-entries))
         (pcase-let ((`(,status . ,path) entry))
-          (let ((file (expand-file-name path directory)))
-            (save-excursion
-              (when (dired-goto-file file)
-                (dired-move-to-filename)
-                (let ((overlay (make-overlay (point) (point))))
-                  (overlay-put
-                   overlay 'before-string
-                   (propertize (my/dired-git-status-label status)
-                               'face (my/dired-git-status-face status)))
-                  (push overlay my/dired-git-status-overlays))))))))))
+          (puthash (expand-file-name path directory) status statuses)))
+      (save-excursion
+        (goto-char (point-min))
+        (while (not (eobp))
+          (when-let ((file (dired-get-filename nil t)))
+            (dired-move-to-filename)
+            (let* ((status (gethash (expand-file-name file) statuses))
+                   (label (if status
+                              (my/dired-git-status-label status)
+                            "   "))
+                   (overlay (make-overlay (point) (point))))
+              (overlay-put
+               overlay 'before-string
+               (if status
+                   (propertize label 'face (my/dired-git-status-face status))
+                 label))
+              (push overlay my/dired-git-status-overlays)))
+          (forward-line 1))))))
 
 (add-hook 'dired-after-readin-hook #'my/dired-show-git-status)
 
