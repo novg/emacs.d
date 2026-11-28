@@ -257,7 +257,7 @@
 ;; Start the preview on demand, rather than opening a browser for every .md.
 (with-eval-after-load 'eglot
   (add-to-list 'eglot-server-programs
-               '((markdown-mode gfm-mode) . ("mpls" "--theme" "light"))))
+               '((markdown-mode gfm-mode) . ("mpls" "--theme" "light" "--code-style" "github"))))
 
 (defun my/markdown-preview ()
   "Start mpls via Eglot or reopen the current Markdown preview."
