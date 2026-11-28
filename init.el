@@ -217,6 +217,91 @@
   :ensure t
   :hook (dired-mode . nerd-icons-dired-mode))
 
+;; Show an explicit Git status immediately before filenames in Dired.
+(defface my/dired-git-modified-face
+  '((t (:inherit warning :weight bold)))
+  "Face for modified files in Dired.")
+
+(defface my/dired-git-added-face
+  '((t (:inherit success :weight bold)))
+  "Face for added files in Dired.")
+
+(defface my/dired-git-deleted-face
+  '((t (:inherit error :weight bold)))
+  "Face for deleted files in Dired.")
+
+(defface my/dired-git-untracked-face
+  '((t (:inherit font-lock-constant-face :weight bold)))
+  "Face for untracked files in Dired.")
+
+(defvar-local my/dired-git-status-overlays nil)
+
+(defun my/dired-git-status-face (status)
+  "Return a face suitable for Git porcelain STATUS."
+  (cond
+   ((string= status "??") 'my/dired-git-untracked-face)
+   ((string-match-p "[U]" status) 'my/dired-git-deleted-face)
+   ((string-match-p "[D]" status) 'my/dired-git-deleted-face)
+   ((string-match-p "[A]" status) 'my/dired-git-added-face)
+   (t 'my/dired-git-modified-face)))
+
+(defun my/dired-git-status-label (status)
+  "Return a compact display label for Git porcelain STATUS."
+  (let ((trimmed (string-trim status)))
+    (if (= (length trimmed) 1)
+        (format "%-2s " trimmed)
+      (format "%-2s " status))))
+
+(defun my/dired-git-status-entries ()
+  "Return Git porcelain status entries for the current Dired directory."
+  (when (and (executable-find "git")
+             (locate-dominating-file default-directory ".git"))
+    (with-temp-buffer
+      (let ((default-directory default-directory)
+            (coding-system-for-read 'utf-8-unix))
+        (when (zerop
+               (process-file
+                "git" nil t nil
+                "-c" "core.quotepath=false"
+                "status" "--porcelain=v1" "-z" "--untracked-files=all" "--" "."))
+          (let ((records (split-string (buffer-string) "\0" t))
+                entries)
+            (while records
+              (let ((record (pop records)))
+                (when (>= (length record) 4)
+                  (let ((status (substring record 0 2))
+                        (path (substring record 3)))
+                    (push (cons status path) entries)
+                    ;; With -z, rename/copy records carry the old path as the
+                    ;; following NUL-separated field.  The first path is the
+                    ;; destination, which is the one Dired should annotate.
+                    (when (and records
+                               (or (memq (aref status 0) '(?R ?C))
+                                   (memq (aref status 1) '(?R ?C))))
+                      (pop records))))))
+            (nreverse entries)))))))
+
+(defun my/dired-show-git-status ()
+  "Annotate changed files in Dired with Git status before the filename."
+  (mapc #'delete-overlay my/dired-git-status-overlays)
+  (setq my/dired-git-status-overlays nil)
+  (when (derived-mode-p 'dired-mode)
+    (let ((directory default-directory))
+      (dolist (entry (my/dired-git-status-entries))
+        (pcase-let ((`(,status . ,path) entry))
+          (let ((file (expand-file-name path directory)))
+            (save-excursion
+              (when (dired-goto-file file)
+                (dired-move-to-filename)
+                (let ((overlay (make-overlay (point) (point))))
+                  (overlay-put
+                   overlay 'before-string
+                   (propertize (my/dired-git-status-label status)
+                               'face (my/dired-git-status-face status)))
+                  (push overlay my/dired-git-status-overlays))))))))))
+
+(add-hook 'dired-after-readin-hook #'my/dired-show-git-status)
+
 (use-package doom-modeline
   :ensure t
   :custom (doom-modeline-icon (display-graphic-p))
