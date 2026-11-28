@@ -247,10 +247,10 @@
 
 (defun my/dired-git-status-label (status)
   "Return a compact display label for Git porcelain STATUS."
-  (let ((trimmed (string-trim status)))
-    (if (= (length trimmed) 1)
-        (format "%-2s " trimmed)
-      (format "%-2s " status))))
+  (let ((label (if (string= status "??")
+                   "?"
+                 (string-trim status))))
+    (format "%-2s " label)))
 
 (defun my/dired-git-status-entries ()
   "Return Git porcelain status entries for the current Dired directory."
