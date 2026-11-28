@@ -252,12 +252,13 @@
   :mode (("\\.md\\'" . markdown-mode)
          ("\\.markdown\\'" . markdown-mode))
   :custom
-  (markdown-command "pandoc --from=gfm --to=html5 --standalone --highlight-style=tango")
-  :bind (:map markdown-mode-map
-              ("C-c m" . my/markdown-preview)))
+  (markdown-command "pandoc --from=gfm --to=html5 --standalone --highlight-style=tango"))
 
-(load (expand-file-name "lisp/markdown-preview.el" user-emacs-directory)
-      nil 'nomessage)
+(use-package markdown-mermaid
+  :ensure t
+  :after markdown-mode
+  :bind (:map markdown-mode-map
+              ("C-c m" . markdown-mermaid-preview)))
 
 (use-package avy
   :ensure t
