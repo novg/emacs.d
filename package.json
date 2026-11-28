@@ -1,0 +1,9 @@
+{
+  "name": "emacs-d-preview",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Local Markdown preview assets",
+  "dependencies": {
+    "mermaid": "12.3.0"
+  }
+}
